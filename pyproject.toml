@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+
+[project]
+name = "ucal"
+authors = [
+    {name = "Charles Titus", email = "charles.titus@nist.gov"},
+]
+description = "UCAL beamline package"
+dynamic = ["version"]
+dependencies = [
+    "bluesky",
+    "ophyd",
+    "sst_base",
+    'tomli ; python_version < "3.11"',
+    "tomli_w",
+    "nbs-core>=0.1",
+    "nbs-bl>=0.2",
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: Public Domain",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research"
+]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
