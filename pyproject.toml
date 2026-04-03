@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 
 [project]
-name = "ucal"
+name = "vppem"
 authors = [
     {name = "Charles Titus", email = "charles.titus@nist.gov"},
 ]
-description = "UCAL beamline package"
+description = "VPPEM beamline package"
 dynamic = ["version"]
 dependencies = [
     "bluesky",
