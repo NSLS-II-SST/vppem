@@ -18,7 +18,6 @@ dependencies = [
     "tomli_w",
     "nbs-core>=0.1",
     "nbs-bl>=0.2",
-    "haxpes",
 ]
 
 classifiers = [
