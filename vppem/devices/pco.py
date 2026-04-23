@@ -5,9 +5,7 @@ from ophyd.areadetector.base import ADComponent as ADCpt, EpicsSignalWithRBV as 
 from ophyd.areadetector.plugins import HDF5Plugin_V33
 from sst_base.cameras import HDF5PluginWithProposalDirectory
 from nslsii.ad33 import SingleTriggerV33
-    
-class SSTHDF5Plugin(HDF5Plugin_V33, HDF5PluginWithProposalDirectory):
-    pass
+from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 
 class PCOEdgeCam(CamBase):
     adc_mode = ADCpt(SignalWithRBV, "AdcMode")
@@ -19,8 +17,21 @@ class PCOEdgeCam(CamBase):
 class PCOEdgeDetector(AreaDetector):
     image = ADCpt(ImagePlugin, "image1:")
     cam = ADCpt(PCOEdgeCam, "cam1:")
-    hdf5 = ADCpt(SSTHDF5Plugin, "HDF1:")
+    hdf5 = ADCpt(HDF5PluginWithProposalDirectory, "HDF1:", md=bl.md, camera_name="vppem-1", date_template="%Y/%m/%d/", read_attrs=["time_stamp"])
     stats = ADCpt(EpicsSignalRO, "Stats1:Total_RBV")
+
+    def set_exposure(self, exposure_time):
+        max_exposure_time = 2.0
+        if exposure_time <= max_exposure_time:
+            self.cam.acquire_time.set(exposure_time)
+            self.cam.num_images.set(1)
+        else:
+            n_images = int(exposure_time / max_exposure_time)
+            if n_images*max_exposure_time < exposure_time:
+                n_images += 1
+            true_exposure_time = exposure_time/n_images
+            self.cam.acquire_time.set(true_exposure_time)
+            self.cam.num_images.set(n_images)
 
 class PCOEdgeDetectorSingleTrigger(SingleTriggerV33, PCOEdgeDetector):
     pass
