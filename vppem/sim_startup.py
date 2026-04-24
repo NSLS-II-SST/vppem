@@ -27,14 +27,19 @@ def get_proposal_directory(asset_name):
 
 def create_proposal_directory(asset_name):
     write_path = get_proposal_directory(asset_name)
+    print(f"Creating proposal directory: {write_path}")
     if not os.path.exists(write_path):
         os.makedirs(write_path)
     return write_path
 
 create_proposal_directory('vppem-1')
 
+print("Switching sampling mode to Continuous...")
 bl['rbd1'].rbd9103.switch_sampling_mode('Continuous')
 bl['rbd2'].rbd9103.switch_sampling_mode('Continuous')
 bl['rbd3'].rbd9103.switch_sampling_mode('Continuous')
 
+print("Warming up PCO...")
 bl['pco'].hdf5.warmup()
+
+print("VPPEM simulation started.")
