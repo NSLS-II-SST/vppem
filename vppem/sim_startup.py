@@ -36,3 +36,5 @@ create_proposal_directory('vppem-1')
 bl['rbd1'].rbd9103.switch_sampling_mode('Continuous')
 bl['rbd2'].rbd9103.switch_sampling_mode('Continuous')
 bl['rbd3'].rbd9103.switch_sampling_mode('Continuous')
+
+bl['pco'].hdf5.warmup()
