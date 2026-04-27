@@ -52,7 +52,7 @@ class PCOHDF5Plugin(HDF5PluginWithProposalDirectory):
 
 
 class PCOEdgeDetector(AreaDetector):
-    image = ADCpt(ImagePlugin, "image1:")
+    # image = ADCpt(ImagePlugin, "image1:")
     cam = ADCpt(PCOEdgeCam, "cam1:")
     hdf5 = ADCpt(PCOHDF5Plugin, "HDF1:", md=bl.md, camera_name="vppem-1", date_template="%Y/%m/%d/", read_attrs=["time_stamp"])
     stats = ADCpt(EpicsSignalRO, "Stats1:Total_RBV")
