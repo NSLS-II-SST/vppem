@@ -20,18 +20,18 @@ class PCOEdgeDetector(AreaDetector):
     hdf5 = ADCpt(HDF5PluginWithProposalDirectory, "HDF1:", md=bl.md, camera_name="vppem-1", date_template="%Y/%m/%d/", read_attrs=["time_stamp"])
     stats = ADCpt(EpicsSignalRO, "Stats1:Total_RBV")
 
-    def set_exposure(self, exposure_time):
+    def set_exposure(self, exposure_time, timeout=10):
         max_exposure_time = 2.0
         if exposure_time <= max_exposure_time:
-            self.cam.acquire_time.set(exposure_time)
-            self.cam.num_images.set(1)
+            self.cam.acquire_time.set(exposure_time, timeout=timeout)
+            self.cam.num_images.set(1, timeout=timeout)
         else:
             n_images = int(exposure_time / max_exposure_time)
             if n_images*max_exposure_time < exposure_time:
                 n_images += 1
             true_exposure_time = exposure_time/n_images
-            self.cam.acquire_time.set(true_exposure_time)
-            self.cam.num_images.set(n_images)
+            self.cam.acquire_time.set(true_exposure_time, timeout=timeout)
+            self.cam.num_images.set(n_images, timeout=timeout)
 
 class PCOEdgeDetectorSingleTrigger(SingleTriggerV33, PCOEdgeDetector):
     pass
