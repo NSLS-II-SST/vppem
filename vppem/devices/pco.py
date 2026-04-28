@@ -16,6 +16,16 @@ class PCOEdgeCam(CamBase):
     readout_mode = ADCpt(SignalWithRBV, "ReadoutMode")
     bit_alignment = ADCpt(SignalWithRBV, "BitAlignment")
     pixel_rate = ADCpt(SignalWithRBV, "PixelRate")
+    delay_time = ADCpt(SignalWithRBV, "DelayTime")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.stage_sigs[self.trigger_mode] = 0 # Auto
+        self.stage_sigs[self.delay_time] = 0
+        self.stage_sigs[self.size.size_x] = 2560
+        self.stage_sigs[self.size.size_y] = 2160
+        self.stage_sigs[self.array_callbacks] = 1 # Array callbacks enabled
 
 class PCOHDF5Plugin(HDF5PluginWithProposalDirectory):
     def warmup(self):
@@ -30,7 +40,7 @@ class PCOHDF5Plugin(HDF5PluginWithProposalDirectory):
             [
                 (self.parent.cam.array_callbacks, 1),
                 (self.parent.cam.image_mode, "Single"),
-                (self.parent.cam.trigger_mode, 1),
+                (self.parent.cam.trigger_mode, 0),
                 # just in case tha acquisition time is set very long...
                 (self.parent.cam.acquire_time, 1),
                 (self.parent.cam.acquire_period, 1),
@@ -62,6 +72,7 @@ class PCOEdgeDetector(AreaDetector):
         if exposure_time <= max_exposure_time:
             self.cam.acquire_time.set(exposure_time, timeout=timeout)
             self.cam.num_images.set(1, timeout=timeout)
+            self.cam.image_mode.set(0, timeout=timeout) # Single image mode
         else:
             n_images = int(exposure_time / max_exposure_time)
             if n_images*max_exposure_time < exposure_time:
@@ -69,6 +80,7 @@ class PCOEdgeDetector(AreaDetector):
             true_exposure_time = exposure_time/n_images
             self.cam.acquire_time.set(true_exposure_time, timeout=timeout)
             self.cam.num_images.set(n_images, timeout=timeout)
+            self.cam.image_mode.set(1, timeout=timeout) # Multi-image mode
 
 class PCOEdgeDetectorSingleTrigger(SingleTriggerV33, PCOEdgeDetector):
     pass
