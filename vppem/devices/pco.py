@@ -41,6 +41,7 @@ class PCOHDF5Plugin(HDF5PluginWithProposalDirectory):
                 (self.parent.cam.array_callbacks, 1),
                 (self.parent.cam.image_mode, "Single"),
                 (self.parent.cam.trigger_mode, 0),
+                (self.parent.cam.num_images, 1),
                 # just in case tha acquisition time is set very long...
                 (self.parent.cam.acquire_time, 1),
                 (self.parent.cam.acquire_period, 1),
