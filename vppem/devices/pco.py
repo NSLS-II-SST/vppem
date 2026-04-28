@@ -26,9 +26,10 @@ class PCOEdgeCam(CamBase):
         self.stage_sigs[self.size.size_x] = 2560
         self.stage_sigs[self.size.size_y] = 2160
         self.stage_sigs[self.array_callbacks] = 1 # Array callbacks enabled
+        self.acquire_time.tolerance = 1e-4
 
 class PCOHDF5Plugin(HDF5PluginWithProposalDirectory):
-    def warmup(self):
+    def warmup(self, timeout=10):
         """
         A convenience method for 'priming' the plugin.
 
@@ -53,19 +54,19 @@ class PCOHDF5Plugin(HDF5PluginWithProposalDirectory):
 
         for sig, val in sigs.items():
             ttime.sleep(0.1)  # abundance of caution
-            sig.set(val).wait()
+            sig.set(val, timeout=timeout).wait()
 
         ttime.sleep(2)  # wait for acquisition
 
         for sig, val in reversed(list(original_vals.items())):
             ttime.sleep(0.1)
-            sig.set(val).wait()
+            sig.set(val, timeout=timeout).wait()
 
 
 class PCOEdgeDetector(AreaDetector):
     # image = ADCpt(ImagePlugin, "image1:")
     cam = ADCpt(PCOEdgeCam, "cam1:")
-    hdf5 = ADCpt(PCOHDF5Plugin, "HDF1:", md=bl.md, camera_name="vppem-1", date_template="%Y/%m/%d/", read_attrs=["time_stamp"])
+    hdf5 = ADCpt(PCOHDF5Plugin, "HDF1:", md=bl.md, camera_name="vppem-1", write_path_template="/nsls2/data3/sst/proposals", read_path_template="/nsls2/data/sst/proposals",date_template="%Y/%m/%d/", read_attrs=["time_stamp"])
     stats = ADCpt(EpicsSignalRO, "Stats1:Total_RBV")
 
     def set_exposure(self, exposure_time, timeout=10):
