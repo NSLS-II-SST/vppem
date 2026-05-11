@@ -3,7 +3,7 @@ from ophyd.areadetector import AreaDetector, ImagePlugin, CamBase
 from ophyd.areadetector.base import ADComponent as ADCpt, EpicsSignalWithRBV as SignalWithRBV
 
 from ophyd.areadetector.plugins import HDF5Plugin_V33
-from sst_base.cameras import HDF5ProposalPluginADTS
+from sst_base.cameras import HDF5ProposalPlugin
 from nslsii.ad33 import SingleTriggerV33
 from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 
@@ -28,7 +28,7 @@ class PCOEdgeCam(CamBase):
         self.stage_sigs[self.array_callbacks] = 1 # Array callbacks enabled
         self.acquire_time.tolerance = 1e-4
 
-class PCOHDF5Plugin(HDF5ProposalPluginADTS):
+class PCOHDF5Plugin(HDF5ProposalPlugin):
     def warmup(self, timeout=10):
         """
         A convenience method for 'priming' the plugin.
