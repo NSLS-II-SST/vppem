@@ -40,7 +40,7 @@ class PCOHDF5Plugin(HDF5ProposalPlugin):
         sigs = OrderedDict(
             [
                 (self.parent.cam.array_callbacks, 1),
-                (self.parent.cam.image_mode, "Single"),
+                (self.parent.cam.image_mode, 0),
                 (self.parent.cam.trigger_mode, 0),
                 (self.parent.cam.num_images, 1),
                 # just in case tha acquisition time is set very long...
