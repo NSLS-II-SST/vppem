@@ -63,6 +63,11 @@ class PCOHDF5Plugin(HDF5ProposalPlugin):
             sig.set(val, timeout=timeout).wait()
 
 
+    def _generate_resource(self, resource_kwargs):
+        if resource_kwargs.get("frame_per_point", 1) > 1:
+            resource_kwargs["join_method"] = "stack"
+        super()._generate_resource(resource_kwargs)
+
 class PCOEdgeDetector(AreaDetector):
     # image = ADCpt(ImagePlugin, "image1:")
     cam = ADCpt(PCOEdgeCam, "cam1:")
@@ -72,17 +77,33 @@ class PCOEdgeDetector(AreaDetector):
     def set_exposure(self, exposure_time, timeout=10):
         max_exposure_time = 2.0
         if exposure_time <= max_exposure_time:
-            self.cam.acquire_time.set(exposure_time, timeout=timeout)
-            self.cam.num_images.set(1, timeout=timeout)
-            self.cam.image_mode.set(0, timeout=timeout) # Single image mode
+            st_list = []
+            st_list.append(self.cam.acquire_time.set(exposure_time, timeout=timeout))
+            st_list.append(self.cam.num_images.set(1, timeout=timeout))
+            st_list.append(self.cam.image_mode.set(0, timeout=timeout)) # Single image mode
+
         else:
             n_images = int(exposure_time / max_exposure_time)
             if n_images*max_exposure_time < exposure_time:
                 n_images += 1
             true_exposure_time = exposure_time/n_images
-            self.cam.acquire_time.set(true_exposure_time, timeout=timeout)
-            self.cam.num_images.set(n_images, timeout=timeout)
-            self.cam.image_mode.set(1, timeout=timeout) # Multi-image mode
+            st_list = []
+            st_list.append(self.cam.acquire_time.set(true_exposure_time, timeout=timeout))
+            st_list.append(self.cam.num_images.set(n_images, timeout=timeout))
+            st_list.append(self.cam.image_mode.set(1, timeout=timeout)) # Multi-image mode
+
+        for st in st_list:
+            st.wait()
+'''            
+    def unstage(self):
+        res = super().unstage()
+        print(f"PCOEdgeDetector.unstage")
+        from time import sleep
+        print(f"PCOEdgeDetector.unstage: sleeping for 10 seconds")
+        sleep(10)
+        print(f"PCOEdgeDetector.unstage: done sleeping")
+        return res
+'''
 
 class PCOEdgeDetectorSingleTrigger(SingleTriggerV33, PCOEdgeDetector):
     pass
