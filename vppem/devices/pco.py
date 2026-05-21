@@ -10,9 +10,6 @@ from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 import time as ttime
 from collections import OrderedDict
 
-IMAGE_TILE_CHUNK = 512
-
-
 class PCOEdgeCam(CamBase):
     adc_mode = ADCpt(SignalWithRBV, "AdcMode")
     camera_setup = ADCpt(SignalWithRBV, "CameraSetup")
@@ -58,10 +55,9 @@ class PCOHDF5Plugin(HDF5ProposalPlugin):
             so each Tiled chunk is at most one 512x512 tile (~0.5 MB as uint16).
         """
         frame_per_point = resource_kwargs.get("frame_per_point", 1)
-        tile = IMAGE_TILE_CHUNK
         if frame_per_point > 1:
-            return (1, 1, tile, tile)
-        return (1, tile, tile)
+            return (1, 1, 2160, 2560)
+        return (1, 2160, 2560)
 
     def warmup(self, timeout=10):
         """
