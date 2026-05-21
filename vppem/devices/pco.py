@@ -10,6 +10,9 @@ from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 import time as ttime
 from collections import OrderedDict
 
+IMAGE_TILE_CHUNK = 512
+
+
 class PCOEdgeCam(CamBase):
     adc_mode = ADCpt(SignalWithRBV, "AdcMode")
     camera_setup = ADCpt(SignalWithRBV, "CameraSetup")
@@ -29,6 +32,37 @@ class PCOEdgeCam(CamBase):
         self.acquire_time.tolerance = 1e-4
 
 class PCOHDF5Plugin(HDF5ProposalPlugin):
+    """
+    HDF5 writer for PCO Edge with Tiled-friendly chunking.
+
+    Chunk layout is passed to the tiled writer via ``chunk_shape`` on the
+    stream resource. Image axes are tiled at ``IMAGE_TILE_CHUNK``; leading
+    dimensions chunk one scan point (and one exposure when stacking frames).
+    """
+
+    def tiled_chunk_shape(self, resource_kwargs):
+        """
+        Chunk shape for Tiled storage of PCO image arrays.
+
+        Parameters
+        ----------
+        resource_kwargs : dict
+            Resource options; ``frame_per_point`` controls whether exposures
+            are stacked as an extra dimension.
+
+        Returns
+        -------
+        tuple of int
+            ``chunk_shape`` for the stream resource. Single exposure per point
+            uses ``(1, 512, 512)``; multiple exposures use ``(1, 1, 512, 512)``
+            so each Tiled chunk is at most one 512x512 tile (~0.5 MB as uint16).
+        """
+        frame_per_point = resource_kwargs.get("frame_per_point", 1)
+        tile = IMAGE_TILE_CHUNK
+        if frame_per_point > 1:
+            return (1, 1, tile, tile)
+        return (1, tile, tile)
+
     def warmup(self, timeout=10):
         """
         A convenience method for 'priming' the plugin.
@@ -64,8 +98,19 @@ class PCOHDF5Plugin(HDF5ProposalPlugin):
 
 
     def _generate_resource(self, resource_kwargs):
+        """
+        Configure stream resource for stacked exposures and Tiled chunking.
+
+        Parameters
+        ----------
+        resource_kwargs : dict
+            Passed through to ``HDF5ProposalPlugin``; may include
+            ``frame_per_point``.
+        """
         if resource_kwargs.get("frame_per_point", 1) > 1:
             resource_kwargs["join_method"] = "stack"
+        if "chunk_shape" not in resource_kwargs:
+            resource_kwargs["chunk_shape"] = self.tiled_chunk_shape(resource_kwargs)
         super()._generate_resource(resource_kwargs)
 
 class PCOEdgeDetector(AreaDetector):
