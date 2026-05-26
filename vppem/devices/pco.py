@@ -37,6 +37,12 @@ class PCOHDF5Plugin(HDF5ProposalPlugin):
     dimensions chunk one scan point (and one exposure when stacking frames).
     """
 
+    def get_frames_per_point(self):
+        if self.parent.add_images:
+            return 1
+        else:
+            return super().get_frames_per_point()
+
     def tiled_chunk_shape(self, resource_kwargs):
         """
         Chunk shape for Tiled storage of PCO image arrays.
@@ -103,7 +109,8 @@ class PCOHDF5Plugin(HDF5ProposalPlugin):
             Passed through to ``HDF5ProposalPlugin``; may include
             ``frame_per_point``.
         """
-        if resource_kwargs.get("frame_per_point", 1) > 1:
+        frame_per_point = resource_kwargs.get('frame_per_point', 1)
+        if frame_per_point > 1:
             resource_kwargs["join_method"] = "stack"
         if "chunk_shape" not in resource_kwargs:
             resource_kwargs["chunk_shape"] = self.tiled_chunk_shape(resource_kwargs)
