@@ -162,7 +162,10 @@ class PCOEdgeDetector(AreaDetector):
         if self.add_images:
             shape = res['shape']
             res['shape'] = (1, *shape[1:])
-        dtype_numpy = np.dtype(self.process.data_type.get(as_string=True).lower()).str
+        dtype_str = self.process.data_type_out.get(as_string=True).lower()
+        if dtype_str == "automatic":
+            dtype_str = self.process.data_type.get(as_string=True).lower()
+        dtype_numpy = np.dtype(dtype_str).str
         res['dtype_numpy'] = dtype_numpy
         return res
 '''            
