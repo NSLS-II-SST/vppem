@@ -115,12 +115,17 @@ class PCOEdgeDetector(AreaDetector):
     hdf5 = ADCpt(PCOHDF5Plugin, "HDF1:", md=bl.md, camera_name="vppem-1", write_path_template="/nsls2/data/sst/proposals", date_template="%Y/%m/%d/", read_attrs=["time_stamp"])
     stats = ADCpt(EpicsSignalRO, "Stats1:Total_RBV")
 
+    def __init__(self, *args, add_images=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_images = add_images
+
     def set_exposure(self, exposure_time, timeout=10):
         max_exposure_time = 2.0
         if exposure_time <= max_exposure_time:
             st_list = []
             st_list.append(self.cam.acquire_time.set(exposure_time, timeout=timeout))
             st_list.append(self.cam.num_images.set(1, timeout=timeout))
+            st_list.append(self.cam.num_exposures.set(1, timeout=timeout))
             st_list.append(self.cam.image_mode.set(0, timeout=timeout)) # Single image mode
 
         else:
@@ -130,8 +135,14 @@ class PCOEdgeDetector(AreaDetector):
             true_exposure_time = exposure_time/n_images
             st_list = []
             st_list.append(self.cam.acquire_time.set(true_exposure_time, timeout=timeout))
-            st_list.append(self.cam.num_images.set(n_images, timeout=timeout))
-            st_list.append(self.cam.image_mode.set(1, timeout=timeout)) # Multi-image mode
+            if self.add_images:
+                st_list.append(self.cam.num_exposures.set(n_images, timeout=timeout))
+                st_list.append(self.cam.num_images.set(1, timeout=timeout))
+                st_list.append(self.cam.image_mode.set(0, timeout=timeout)) # Multi-image mode
+            else:
+                st_list.append(self.cam.num_images.set(n_images, timeout=timeout))
+                st_list.append(self.cam.num_exposures.set(1, timeout=timeout))
+                st_list.append(self.cam.image_mode.set(1, timeout=timeout)) # Multi-image mode
 
         for st in st_list:
             st.wait()
