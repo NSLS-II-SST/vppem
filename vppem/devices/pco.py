@@ -6,6 +6,7 @@ from ophyd.areadetector.plugins import HDF5Plugin_V33
 from sst_base.cameras import HDF5ProposalPlugin
 from nslsii.ad33 import SingleTriggerV33
 from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
+import numpy as np
 
 import time as ttime
 from collections import OrderedDict
@@ -161,6 +162,8 @@ class PCOEdgeDetector(AreaDetector):
         if self.add_images:
             shape = res['shape']
             res['shape'] = (1, *shape[1:])
+        dtype_numpy = np.dtype(self.process.data_type.get(as_string=True).lower()).str
+        res['dtype_numpy'] = dtype_numpy
         return res
 '''            
     def unstage(self):
