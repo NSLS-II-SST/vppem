@@ -148,6 +148,13 @@ class PCOEdgeDetector(AreaDetector):
 
         for st in st_list:
             st.wait()
+
+    def make_data_key(self):
+        res = super().make_data_key()
+        if self.add_images:
+            shape = res['shape']
+            res['shape'] = (1, *shape[1:])
+        return res
 '''            
     def unstage(self):
         res = super().unstage()
